@@ -1,76 +1,85 @@
 package spms.servlets;
 
-import spms.bind.DataBinding;
-import spms.bind.ServletRequestDataBinder;
-import spms.controllers.Controller;
-import spms.controllers.MemberAddController;
-import spms.controllers.MemberListController;
-import spms.vo.Member;
+import java.io.IOException;
+import java.util.HashMap;
 
-import javax.jws.Oneway;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
 
-/**
- * IDE : IntelliJ IDEA
- * Created by minho on 2018. 8. 2..
- */
+import spms.bind.DataBinding;
+import spms.bind.ServletRequestDataBinder;
+import spms.context.ApplicationContext;
+import spms.controls.Controller;
+import spms.listeners.ContextLoaderListener;
 
+// DataBinding 처리
+@SuppressWarnings("serial")
 @WebServlet("*.do")
 public class DispatcherServlet extends HttpServlet {
-    @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("text/html; charset=UTF-8");
+  @Override
+  protected void service(
+      HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException {
+    response.setContentType("text/html; charset=UTF-8");
+    String servletPath = request.getServletPath();
+    try {
+//      ServletContext sc = this.getServletContext();
+      ApplicationContext applicationContext = ContextLoaderListener.getApplicationContext();
 
-        String servletPath = req.getServletPath();
-        HashMap<String, Object> model = new HashMap<>();
-        Controller pageController = (Controller) getServletContext().getAttribute(servletPath);
+      // 페이지 컨트롤러에게 전달할 Map 객체를 준비한다. 
+      HashMap<String,Object> model = new HashMap<String,Object>();
+      model.put("session", request.getSession());
+      
+      Controller pageController = (Controller) applicationContext.getBean(servletPath);
+      if (pageController == null) {
+        throw new Exception("요청한 서비스를 찾을 수 없습니다.");
+      }
 
-        try {
-            if (pageController instanceof DataBinding) {
-                prepareRequestData(req, model, (DataBinding)pageController);
-            }
+      if (pageController instanceof DataBinding) {
+        prepareRequestData(request, model, (DataBinding)pageController);
+      }
 
-            String viewURL = pageController.execute(model);
-
-            for (String key : model.keySet()) {
-                req.setAttribute(key, model.get(key));
-            }
-
-            if (viewURL.startsWith("redirect:")) {
-                resp.sendRedirect(viewURL.substring(9));
-                return;
-            }
-            RequestDispatcher rd = req.getRequestDispatcher(viewURL);
-            rd.include(req, resp);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            req.setAttribute("error", e);
-            RequestDispatcher rd = req.getRequestDispatcher("/Error.jsp");
-            rd.forward(req, resp);
-        }
+      // 페이지 컨트롤러를 실행한다.
+      String viewUrl = pageController.execute(model);
+      
+      // Map 객체에 저장된 값을 ServletRequest에 복사한다.
+      for (String key : model.keySet()) {
+        request.setAttribute(key, model.get(key));
+      }
+      
+      if (viewUrl.startsWith("redirect:")) {
+        response.sendRedirect(viewUrl.substring(9));
+        return;
+      } else {
+        RequestDispatcher rd = request.getRequestDispatcher(viewUrl);
+        rd.include(request, response);
+      }
+      
+    } catch (Exception e) {
+      e.printStackTrace();
+      request.setAttribute("error", e);
+      RequestDispatcher rd = request.getRequestDispatcher("/Error.jsp");
+      rd.forward(request, response);
     }
+  }
 
-    private void prepareRequestData(HttpServletRequest req,
-                                    HashMap<String, Object> model,
-                                    DataBinding dataBinding) throws Exception {
-        Object[] dataBinders = dataBinding.getDataBindings();
-        String dataName;
-        Class<?> dataType;
-        Object dataObj;
-
-        for (int i = 0 ; i < dataBinders.length; i += 2) {
-            dataName = (String) dataBinders[i];
-            dataType = (Class<?>) dataBinders[i + 1];
-            dataObj = ServletRequestDataBinder.bind(req, dataType, dataName);
-            model.put(dataName, dataObj);
-        }
+  private void prepareRequestData(HttpServletRequest request,
+      HashMap<String, Object> model, DataBinding dataBinding)
+      throws Exception {
+    Object[] dataBinders = dataBinding.getDataBinders();
+    String dataName = null;
+    Class<?> dataType = null;
+    Object dataObj = null;
+    for (int i = 0; i < dataBinders.length; i+=2) {
+      dataName = (String)dataBinders[i];
+      dataType = (Class<?>) dataBinders[i+1];
+      dataObj = ServletRequestDataBinder.bind(request, dataType, dataName);
+      model.put(dataName, dataObj);
     }
+  }
 }

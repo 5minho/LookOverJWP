@@ -1,6 +1,6 @@
 package spms.dao;
 
-// DataSource 활용 
+// MemberDao 인터페이스 구현 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,9 +10,11 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import spms.annotation.Component;
 import spms.vo.Member;
 
-public class MySQLMemberDao implements MemberDao {
+@Component("memberDao")
+public class MySqlMemberDao implements MemberDao {
   DataSource ds;
 
   public void setDataSource(DataSource ds) {
