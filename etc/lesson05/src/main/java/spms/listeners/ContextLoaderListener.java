@@ -3,6 +3,7 @@ package spms.listeners; /**
  * Created by minho on 2018. 8. 1..
  */
 
+import spms.context.ApplicationContext;
 import spms.controls.*;
 import spms.dao.MysqlMemberDao;
 
@@ -21,6 +22,12 @@ import javax.sql.DataSource;
 public class ContextLoaderListener implements ServletContextListener,
         HttpSessionListener, HttpSessionAttributeListener {
 
+    private static ApplicationContext applicationContext;
+
+    public static ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
+
     // Public constructor is required by servlet spec
     public ContextLoaderListener() {
     }
@@ -35,23 +42,12 @@ public class ContextLoaderListener implements ServletContextListener,
       */
       try {
           ServletContext servletContext = sce.getServletContext();
-          InitialContext initialContext = new InitialContext();
-          DataSource dataSource = (DataSource) initialContext.lookup("java:comp/env/jdbc/studydb");
 
-          MysqlMemberDao mysqlMemberDao = new MysqlMemberDao();
-          mysqlMemberDao.setDataSource(dataSource);
-          servletContext.setAttribute("/auth/login.do",
-                  new LoginController().setMysqlMemberDao(mysqlMemberDao));
-          servletContext.setAttribute("/auth/logout.do",
-                  new LogoutController());
-          servletContext.setAttribute("/member/list.do",
-                  new MemberListController().setMysqlMemberDao(mysqlMemberDao));
-          servletContext.setAttribute("/member/add.do",
-                  new MemberAddController().setMysqlMemberDao(mysqlMemberDao));
-          servletContext.setAttribute("/member/update.do",
-                  new MemberUpdateController().setMysqlMemberDao(mysqlMemberDao));
-          servletContext.setAttribute("/member/delete.do",
-                  new MemberDeleteController().setMysqlMemberDao(mysqlMemberDao));
+          String propertiesPath = servletContext.getRealPath(
+                  servletContext.getInitParameter("contextConfigLocation")
+          );
+          applicationContext = new ApplicationContext(propertiesPath);
+
       } catch (Exception e) {
           e.printStackTrace();
       }

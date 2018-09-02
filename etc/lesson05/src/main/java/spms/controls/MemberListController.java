@@ -1,6 +1,7 @@
 package spms.controls;
 
 
+import spms.annotation.Component;
 import spms.dao.MysqlMemberDao;
 import spms.vo.Member;
 
@@ -11,6 +12,8 @@ import java.util.Map;
  * IDE : IntelliJ IDEA
  * Created by minho on 2018. 9. 1..
  */
+
+@Component("/member/list.do")
 public class MemberListController implements Controller {
 
     private MysqlMemberDao mysqlMemberDao;

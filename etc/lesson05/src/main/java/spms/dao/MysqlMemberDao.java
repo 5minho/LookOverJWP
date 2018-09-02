@@ -10,9 +10,11 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import spms.annotation.Component;
 import spms.controls.MemberAddController;
 import spms.vo.Member;
 
+@Component(value = "memberDao")
 public class MysqlMemberDao implements MemberDao {
     DataSource ds;
 

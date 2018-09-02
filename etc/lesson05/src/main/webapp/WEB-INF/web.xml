@@ -6,15 +6,10 @@
          id="WebApp_ID" version="3.0">
   <display-name>web06</display-name>
 
-  <!-- 컨텍스트 초기화 파라미터 -->
-
-  <!-- 필터 선언 -->
-
-  <!-- 필터 URL 매핑 -->
-
-  <!-- 서블릿 선언 -->
-
-  <!-- 서블릿을 URL과 연결 -->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>/WEB-INF/application-context.properties</param-value>
+  </context-param>
 
   <resource-ref>
     <res-ref-name>jdbc/studydb</res-ref-name>
