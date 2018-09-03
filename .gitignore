@@ -1,4 +1,6 @@
 */.idea/*
+etc/lesson05/target/*
+etc/lesson05/.idea/*
 */out/*
 */.classpath
 */.project
