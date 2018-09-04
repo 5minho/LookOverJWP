@@ -4,10 +4,7 @@ import spms.annotation.Component;
 import spms.vo.Project;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,5 +56,30 @@ public class MysqlProjectDao implements ProjectDao {
             if (conn != null) conn.close();
         }
 
+    }
+
+    @Override
+    public int insert(Project project) throws Exception {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            conn = dataSource.getConnection();
+            pstmt = conn.prepareStatement("" +
+                    "insert into Projects " +
+                    "(pname, content, sta_date, end_date, state, cre_date, tags) " +
+                    "values (?, ?, ?, ?, 0, now(), ?)");
+            pstmt.setString(1, project.getName());
+            pstmt.setString(2, project.getContent());
+            pstmt.setDate(3, new Date(project.getStartDate().getTime()));
+            pstmt.setDate(4, new Date(project.getEndDate().getTime()));
+            pstmt.setString(5, project.getTags());
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            if (pstmt != null) pstmt.close();
+            if (conn != null) conn.close();
+        }
     }
 }
