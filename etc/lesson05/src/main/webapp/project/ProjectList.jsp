@@ -32,7 +32,7 @@
     <c:forEach var="project" items="${projects}">
         <tr>
             <td>${project.no}</td>
-            <td>${project.name}</td>
+            <td><a href="update.do?no=${project.no}">${project.name}</a></td>
             <td>${project.startDate}</td>
             <td>${project.endDate}</td>
             <td>${project.state}</td>

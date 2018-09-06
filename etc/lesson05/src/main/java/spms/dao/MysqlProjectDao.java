@@ -82,4 +82,57 @@ public class MysqlProjectDao implements ProjectDao {
             if (conn != null) conn.close();
         }
     }
+
+    @Override
+    public int update(Project project) throws Exception {
+        PreparedStatement pstmt = null;
+        try (Connection conn = dataSource.getConnection()) {
+            pstmt = conn.prepareStatement("" +
+                            "update projects " +
+                            "set pname=?, content=?, sta_date=?, end_date=?, state=?, tags=? " +
+                            "where pno=?");
+            pstmt.setString(1, project.getName());
+            pstmt.setString(2, project.getContent());
+            pstmt.setDate(3, new Date(project.getStartDate().getTime()));
+            pstmt.setDate(4, new Date(project.getEndDate().getTime()));
+            pstmt.setInt(5, project.getState());
+            pstmt.setString(6, project.getTags());
+            pstmt.setInt(7, project.getNo());
+            return pstmt.executeUpdate();
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            if (pstmt != null) pstmt.close();
+        }
+    }
+
+    @Override
+    public Project selectOne(int no) throws Exception {
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try (Connection conn = dataSource.getConnection()) {
+            pstmt = conn.prepareStatement("" +
+                        "select pno, pname, content, sta_date, end_date, state, tags " +
+                        "from projects " +
+                        "where pno=?");
+            pstmt.setInt(1, no);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return new Project()
+                        .setNo(rs.getInt("pno"))
+                        .setName(rs.getString("pname"))
+                        .setContent(rs.getString("content"))
+                        .setStartDate(rs.getDate("sta_date"))
+                        .setEndDate(rs.getDate("end_date"))
+                        .setState(rs.getInt("state"))
+                        .setTags(rs.getString("tags"));
+            }
+            throw new Exception("해당 프로젝트는 존재하지 않습니다.");
+        } catch (SQLException e) {
+            throw e;
+        } finally {
+            if (pstmt != null) pstmt.close();
+            if (rs != null) rs.close();
+        }
+    }
 }
