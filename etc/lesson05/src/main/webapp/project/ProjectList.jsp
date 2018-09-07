@@ -36,7 +36,7 @@
             <td>${project.startDate}</td>
             <td>${project.endDate}</td>
             <td>${project.state}</td>
-            <td>[삭제]</td>
+            <td><a href="delete.do?no=${project.no}">[삭제]</a></td>
         </tr>
     </c:forEach>
     </table>

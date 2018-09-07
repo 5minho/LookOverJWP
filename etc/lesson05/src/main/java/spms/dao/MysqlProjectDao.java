@@ -135,4 +135,18 @@ public class MysqlProjectDao implements ProjectDao {
             if (rs != null) rs.close();
         }
     }
+
+    @Override
+    public int delete(int no) throws Exception {
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try (Connection conn = dataSource.getConnection()) {
+            pstmt = conn.prepareStatement("" +
+                        "DELETE FROM Projects " +
+                        "WHERE pno=?");
+            pstmt.setInt(1, no);
+            return pstmt.executeUpdate();
+        }
+    }
 }
